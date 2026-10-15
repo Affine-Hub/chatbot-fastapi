@@ -1,6 +1,8 @@
 # PDF Chatbot - FastAPI Application with LangChain Integration
 
-This repository contains a FastAPI application integrated with LangChain for question answering and document retrieval. The application allows uploading PDF files, extracting text, and querying for answers based on user input.
+FastAPI app with LangChain for PDF upload, vector storage (Chroma), and WebSocket Q&A. Uses **Ollama** locally for embeddings and chat (`mistral`).
+
+**Layout:** flat repo — `main_websocket.py` at the **repository root** (not under `Backend/`).
 
 ## Features
 
@@ -9,58 +11,79 @@ This repository contains a FastAPI application integrated with LangChain for que
 - **Document Retrieval**: Retrieve source documents related to the answered questions.
 - **Memory Integration**: Uses conversation history to improve response relevance.
 
-## Setup Instructions
+## Requirements
 
-To run this application locally, follow these steps:
+- Python 3.10+ (3.11 recommended if installs fail on 3.12+)
+- **[Ollama](https://ollama.com/)** running locally with the **`mistral`** model (`ollama pull mistral`)
 
-### Prerequisites
+## Project structure
 
-- Python 3.10+
-- Install dependencies using `pip install -r requirements.txt`
+```text
+pdf-chatbot-fastapi/
+├── main_websocket.py   # FastAPI app (run uvicorn from this directory)
+├── requirements.txt
+├── files/              # uploaded PDFs (created at runtime)
+└── vectorstore_db/     # Chroma persistence (created at runtime)
+```
 
-### Running the Application
+## Local run (macOS / Linux)
 
-1. Clone the repository:
+From the **repo root**:
 
-   ```bash
-   git clone <repository-url>
-   cd <repository-folder>
-   ```
+```bash
+cd /path/to/pdf-chatbot-fastapi
 
-2. Install dependencies:
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -U pip
+pip install -r requirements.txt
 
-   ```bash
-   pip install -r requirements.txt
-   ```
+python -m uvicorn main_websocket:app --host 127.0.0.1 --port 8000 --reload
+```
 
-3. Start the FastAPI server:
+**Windows (PowerShell):**
 
-   ```bash
-   uvicorn main:app --host 0.0.0.0 --port 8000
-   ```
+```powershell
+cd pdf-chatbot-fastapi
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -U pip
+pip install -r requirements.txt
+python -m uvicorn main_websocket:app --host 127.0.0.1 --port 8000 --reload
+```
 
-4. Access the API at `http://localhost:8000` in your web browser.
+Alternative (no reload):
 
-### Endpoints
+```bash
+python main_websocket.py
+```
+
+### Verify
+
+| URL | Purpose |
+|-----|---------|
+| `http://127.0.0.1:8000/docs` | Swagger UI |
+| `http://127.0.0.1:8000/openapi.json` | OpenAPI schema (health checks) |
+
+## Endpoints
 
 - **GET /get_documents/**: Retrieve a list of uploaded documents.
 - **POST /upload_pdf/**: Upload a PDF file for processing.
 - **WebSocket /ws/chat**: WebSocket endpoint for real-time question answering.
 
-### Example Usage
+## Example usage
 
-1. Upload a PDF file using `/upload_pdf/` endpoint.
-2. Connect to `/ws/chat` WebSocket endpoint using a WebSocket client.
-3. Send a text message to ask a question and receive real-time answers.
+1. Upload a PDF file using `/upload_pdf/`.
+2. Connect to `/ws/chat` with a WebSocket client.
+3. Send a text message to ask a question and receive streamed answers.
 
-## Technologies Used
+## Technologies used
 
-- **FastAPI**: Web framework for building APIs with Python 3.7+.
-- **LangChain**: Library for NLP tasks including question answering and document retrieval.
-- **Chroma Vector Store**: Persistent storage for document embeddings.
-- **PyPDF2**: Library for PDF file manipulation.
-
+- **FastAPI**: Web framework for building APIs.
+- **LangChain**: Question answering and document retrieval.
+- **Chroma**: Document embeddings storage.
+- **Ollama**: Local LLM and embeddings (`mistral`).
 
 ## License
 
-This project is licensed under the MIT License - see the [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) file for details.
+This project is licensed under the MIT License — see [LICENSE](LICENSE).
